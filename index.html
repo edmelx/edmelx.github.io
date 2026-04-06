@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edgar Melo — Portfólio</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f4f3ef;
+  --fg: #111;
+  --muted: #888;
+  --border: #ccc;
+  --card: #fff;
+  --hover: #f0efe9;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  overflow-x: hidden;
+}
+
+/* ── Hint ── */
+.hint {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  animation: blink 2s infinite;
+  z-index: 10;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+.hint.hidden { opacity: 0; }
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ── Stage ── */
+.stage {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* ── Folder ── */
+.folder {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.2s;
+}
+.folder:hover .folder-icon { transform: translateY(-4px); }
+
+.folder-icon {
+  width: 64px;
+  height: 52px;
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.folder-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.folder-label {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ── Central folder ── */
+.folder-central {
+  position: relative;
+  transform: none !important;
+  z-index: 5;
+}
+
+.folder-central .folder-icon {
+  width: 80px;
+  height: 65px;
+}
+
+.folder-central .folder-label {
+  font-size: 11px;
+  color: var(--fg);
+  font-weight: 500;
+}
+
+/* ── Connector lines ── */
+.connectors {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Sub folders — hidden initially ── */
+.folder-sub {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.7);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.folder-sub.visible {
+  opacity: 1;
+  pointer-events: all;
+  transform: scale(1);
+}
+
+/* Staggered delays */
+.folder-sub:nth-child(1) { transition-delay: 0s; }
+.folder-sub:nth-child(2) { transition-delay: 0.08s; }
+.folder-sub:nth-child(3) { transition-delay: 0.16s; }
+.folder-sub:nth-child(4) { transition-delay: 0.24s; }
+.folder-sub:nth-child(5) { transition-delay: 0.32s; }
+
+/* ── Panel overlay ── */
+.panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(244, 243, 239, 0.0);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  backdrop-filter: blur(0px);
+}
+
+.panel-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+  background: rgba(244, 243, 239, 0.92);
+  backdrop-filter: blur(8px);
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  width: min(680px, 92vw);
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 40px;
+  position: relative;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.panel-close {
+  position: absolute;
+  top: 16px; right: 20px;
+  background: none; border: none;
+  font-family: 'DM Mono', monospace;
+  font-size: 18px;
+  color: var(--muted);
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.panel-close:hover { color: var(--fg); }
+
+.panel-tag {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.panel-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 32px;
+  line-height: 1.1;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 20px;
+}
+
+/* Panel content styles */
+.panel-body { font-size: 12px; line-height: 1.9; color: var(--muted); }
+.panel-body strong { color: var(--fg); font-weight: 500; }
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 11px;
+}
+.info-row:last-child { border-bottom: none; }
+.info-key { color: var(--muted); }
+.info-val { color: var(--fg); }
+.info-val a { color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--border); }
+
+.proj-item {
+  padding: 16px 0;
+  border-bottom: 1px solid #eee;
+}
+.proj-item:last-child { border-bottom: none; }
+.proj-name { font-family: 'DM Serif Display', serif; font-size: 17px; margin-bottom: 4px; }
+.proj-desc { font-size: 11px; color: var(--muted); margin-bottom: 8px; line-height: 1.7; }
+.proj-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.ptag { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border: 1px solid var(--border); color: var(--muted); }
+
+.skill-section { margin-bottom: 20px; }
+.skill-section h4 { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #eee; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font-size: 11px; padding: 4px 10px; border: 1px solid var(--border); background: var(--hover); }
+
+.exp-item { padding: 16px 0; border-bottom: 1px solid #eee; }
+.exp-item:last-child { border-bottom: none; }
+.exp-role { font-family: 'DM Serif Display', serif; font-size: 17px; margin-bottom: 2px; }
+.exp-co { font-size: 10px; color: var(--muted); margin-bottom: 10px; }
+.exp-bullets { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.exp-bullets li { font-size: 11px; color: var(--muted); padding-left: 14px; position: relative; line-height: 1.7; }
+.exp-bullets li::before { content: '—'; position: absolute; left: 0; color: var(--fg); }
+
+.contact-link {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 0; border-bottom: 1px solid #eee;
+  text-decoration: none; color: var(--fg);
+  transition: padding-left 0.2s;
+}
+.contact-link:hover { padding-left: 8px; }
+.contact-link:last-child { border-bottom: none; }
+.cicon { width: 32px; height: 32px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+.cinfo .ctype { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+.cinfo .clabel { font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="hint" id="hint">clique na pasta para abrir</div>
+
+<div class="stage" id="stage">
+
+  <svg class="connectors" id="connectors"></svg>
+
+  <!-- Sub folders -->
+  <div class="folder folder-sub" id="f-sobre" style="top:12%; left:50%; transform:translateX(-50%)" onclick="openPanel('sobre')">
+    <div class="folder-icon">
+      <svg viewBox="0 0 64 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 10C2 7.8 3.8 6 6 6H24L30 12H58C60.2 12 62 13.8 62 16V46C62 48.2 60.2 50 58 50H6C3.8 50 2 48.2 2 46V10Z" fill="white" stroke="#111" stroke-width="1.5"/>
+        <path d="M2 18H62" stroke="#111" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="folder-label">Sobre mim</div>
+  </div>
+
+  <div class="folder folder-sub" id="f-projetos" style="top:28%; right:8%" onclick="openPanel('projetos')">
+    <div class="folder-icon">
+      <svg viewBox="0 0 64 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 10C2 7.8 3.8 6 6 6H24L30 12H58C60.2 12 62 13.8 62 16V46C62 48.2 60.2 50 58 50H6C3.8 50 2 48.2 2 46V10Z" fill="white" stroke="#111" stroke-width="1.5"/>
+        <path d="M2 18H62" stroke="#111" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="folder-label">Projetos</div>
+  </div>
+
+  <div class="folder folder-sub" id="f-habilidades" style="top:28%; left:8%" onclick="openPanel('habilidades')">
+    <div class="folder-icon">
+      <svg viewBox="0 0 64 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 10C2 7.8 3.8 6 6 6H24L30 12H58C60.2 12 62 13.8 62 16V46C62 48.2 60.2 50 58 50H6C3.8 50 2 48.2 2 46V10Z" fill="white" stroke="#111" stroke-width="1.5"/>
+        <path d="M2 18H62" stroke="#111" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="folder-label">Competências</div>
+  </div>
+
+  <div class="folder folder-sub" id="f-experiencia" style="bottom:20%; left:8%" onclick="openPanel('experiencia')">
+    <div class="folder-icon">
+      <svg viewBox="0 0 64 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 10C2 7.8 3.8 6 6 6H24L30 12H58C60.2 12 62 13.8 62 16V46C62 48.2 60.2 50 58 50H6C3.8 50 2 48.2 2 46V10Z" fill="white" stroke="#111" stroke-width="1.5"/>
+        <path d="M2 18H62" stroke="#111" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="folder-label">Experiência</div>
+  </div>
+
+  <div class="folder folder-sub" id="f-contato" style="bottom:20%; right:8%" onclick="openPanel('contato')">
+    <div class="folder-icon">
+      <svg viewBox="0 0 64 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 10C2 7.8 3.8 6 6 6H24L30 12H58C60.2 12 62 13.8 62 16V46C62 48.2 60.2 50 58 50H6C3.8 50 2 48.2 2 46V10Z" fill="white" stroke="#111" stroke-width="1.5"/>
+        <path d="M2 18H62" stroke="#111" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="folder-label">Contato</div>
+  </div>
+
+  <!-- Central folder -->
+  <div class="folder folder-central" id="f-central" onclick="toggleFolders()">
+    <div class="folder-icon">
+      <svg viewBox="0 0 80 65" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 12C2 9.8 3.8 8 6 8H30L38 16H74C76.2 16 78 17.8 78 20V58C78 60.2 76.2 62 74 62H6C3.8 62 2 60.2 2 58V12Z" fill="#111" stroke="#111" stroke-width="1.5"/>
+        <path d="M2 22H78" stroke="white" stroke-width="1" opacity="0.3"/>
+      </svg>
+    </div>
+    <div class="folder-label">Edgar Melo</div>
+  </div>
+
+</div>
+
+<!-- Panel overlay -->
+<div class="panel-overlay" id="panel-overlay" onclick="closePanel(event)">
+  <div class="panel" id="panel-content">
+    <button class="panel-close" onclick="closePanel()">×</button>
+    <div id="panel-inner"></div>
+  </div>
+</div>
+
+<script>
+  let opened = false;
+  const subFolders = document.querySelectorAll('.folder-sub');
+  const hint = document.getElementById('hint');
+  const svg = document.getElementById('connectors');
+  const central = document.getElementById('f-central');
+
+  const panels = {
+    sobre: `
+      <div class="panel-tag">// pasta_01</div>
+      <div class="panel-title">Sobre mim</div>
+      <p class="panel-body">
+        Em busca de uma oportunidade na área de Dados, Redes de Computadores ou Suporte Técnico, onde eu possa aplicar meus conhecimentos em monitoramento de sistemas, suporte ao usuário ou configuração de redes e adquirir novas experiências ao passo que contribuo para a eficiência da equipe de TI. Na área de dados, busco minha primeira experiência profissional.
+      </p>
+      <div style="margin-top:24px">
+        <div class="info-row"><span class="info-key">Localização</span><span class="info-val">Porto Alegre, RS</span></div>
+        <div class="info-row"><span class="info-key">Regime</span><span class="info-val">CLT</span></div>
+        <div class="info-row"><span class="info-key">Inglês</span><span class="info-val">B1-B2 Intermediário</span></div>
+        <div class="info-row"><span class="info-key">Espanhol</span><span class="info-val">B2 Intermediário</span></div>
+        <div class="info-row"><span class="info-key">GitHub</span><span class="info-val"><a href="https://github.com/edmelx" target="_blank">github.com/edmelx</a></span></div>
+        <div class="info-row"><span class="info-key">CNH</span><span class="info-val">Categoria AB</span></div>
+      </div>
+    `,
+    projetos: `
+      <div class="panel-tag">// pasta_02</div>
+      <div class="panel-title">Projetos</div>
+      <div class="proj-item">
+        <div class="proj-name">Monitor de Site</div>
+        <div class="proj-desc">Monitoramento de 7 sites a cada 15s com alertas de disponibilidade e dashboard Grafana em tempo real.</div>
+        <div class="proj-tags"><span class="ptag">Python</span><span class="ptag">SQLite</span><span class="ptag">Grafana</span></div>
+      </div>
+      <div class="proj-item">
+        <div class="proj-name">Chamados GLPI</div>
+        <div class="proj-desc">400 chamados simulados com análise de SLA e dashboard interativo no Looker Studio.</div>
+        <div class="proj-tags"><span class="ptag">Python</span><span class="ptag">Pandas</span><span class="ptag">Looker Studio</span></div>
+      </div>
+      <div class="proj-item">
+        <div class="proj-name">Dashboard de Estoque</div>
+        <div class="proj-desc">Dashboard gerencial com indicadores de reposição no Metabase Cloud.</div>
+        <div class="proj-tags"><span class="ptag">Metabase</span><span class="ptag">SQL</span></div>
+      </div>
+      </div>
+      </div>
+      <div class="proj-item">
+        <div class="proj-name">Vendas e Faturamento</div>
+        <div class="proj-desc">Análise de vendas com KPIs de faturamento e ticket médio.</div>
+        <div class="proj-tags"><span class="ptag">Python</span><span class="ptag">SQL</span><span class="ptag">Matplotlib</span></div>
+      </div>
+      <div style="margin-top:20px;text-align:center">
+        <a href="https://github.com/edmelx" target="_blank" style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#888;text-decoration:none;border-bottom:1px solid #ccc">Ver todos no GitHub →</a>
+      </div>
+    `,
+    habilidades: `
+      <div class="panel-tag">// pasta_03</div>
+      <div class="panel-title">Competências &amp; Certificados</div>
+
+      <div class="skill-section">
+        <h4>Competências técnicas</h4>
+        <div class="tags">
+          <span class="tag">SQL</span>
+          <span class="tag">SQLite</span>
+          <span class="tag">Power BI</span>
+          <span class="tag">Looker Studio</span>
+          <span class="tag">Grafana</span>
+          <span class="tag">Zabbix</span>
+          <span class="tag">Redes de Computadores</span>
+          <span class="tag">Linux Ubuntu</span>
+          <span class="tag">Excel</span>
+          </div>
+      </div>
+
+      <div class="skill-section" style="margin-top:24px;">
+        <h4>Certificados</h4>
+        <div class="info-row"><span class="info-key">DIO × Accenture</span><span class="info-val">Python para Análise de Dados e Automação</span></div>
+        <div class="info-row"><span class="info-key">Midori Toyota / Udemy</span><span class="info-val">SQL para Análise de Dados</span></div>
+        <div class="info-row"><span class="info-key">Google</span><span class="info-val">Fundamentos de Suporte Técnico de TI</span></div>
+        <div class="info-row"><span class="info-key">LinkedIn Learning</span><span class="info-val">Python para Não Programadores</span></div>
+        <div class="info-row"><span class="info-key">Intelbras</span><span class="info-val">Introdução às Redes de Computadores</span></div>
+        <div class="info-row"><span class="info-key">Fundação Bradesco</span><span class="info-val">Excel e Word Básico</span></div>
+        <div class="info-row"><span class="info-key">Xperiun</span><span class="info-val">Minicurso de Power BI</span></div>
+
+        <div 
+      </div>
+    `,
+    experiencia: `
+      <div class="panel-tag">// pasta_04</div>
+      <div class="panel-title">Experiência</div>
+      <div class="exp-item">
+        <div class="exp-role">Assistente de Suporte Pleno</div>
+        <div class="exp-co">RL NET Serviços de Tecnologia · Jun 2022 – Mar 2026</div>
+        <ul class="exp-bullets">
+          <li>Realizei o primeiro atendimento a clientes via chat e telefone;</li>
+          <li>Prestei apoio técnico a técnicos de campo;</li>
+          <li>Realizei a configuração básica roteadores residenciais;</li>
+          <li>Conduzi o processo de integração de novos colaboradores;</li>
+          <li>Monitorei disponibilidade de rede para clientes via Grafana e Zabbix;</li>
+          <li>Encaminhei ordens de serviço para equipes de campo para correção de falhas externas.</li>
+        </ul>
+      </div>
+      <div class="exp-item">
+        <div class="exp-role">Estagiário</div>
+        <div class="exp-co">Departamento de Identificação IGP-RS · Fev 2021 – Jun 2022</div>
+        <ul class="exp-bullets">
+          <li>Digitalizei documentos administrativos;</li>
+          <li>Atualizei planilhas de acordo com a entrada de solicitações;</li>
+          <li>Organizei e localizei arquivos no acervo físico da organização;</li>
+          <li>Instruí novos colegas sobre funções e processos do setor;</li>
+          <li>Arquivei ofícios e memorandos seguindo as boas práticas da organização;</li>
+          <li>Realizei pequenos reparos em computadores.</li>
+        </ul>
+      </div>
+      <div style="margin-top:24px;border-top:1px solid #eee;padding-top:20px">
+        <div class="panel-tag" style="margin-bottom:14px">// formação</div>
+        <div class="info-row"><span class="info-key">2023 → atual</span><span class="info-val">Tecnologia em Redes — Anhanguera</span></div>
+        <div class="info-row"><span class="info-key">2020 – 2022</span><span class="info-val">Técnico em Informática — Senac Tech</span></div>
+      </div>
+    `,
+    contato: `
+      <div class="panel-tag">// pasta_05</div>
+      <div class="panel-title">Vamos <em style="font-style:italic;color:#888">trabalhar juntos.</em></div>
+      <a class="contact-link" href="mailto:edgarmelo0101@gmail.com">
+        <div class="cicon">@</div>
+        <div class="cinfo"><div class="ctype">E-mail</div><div class="clabel">edgarmelo0101@gmail.com</div></div>
+      </a>
+      <a class="contact-link" href="tel:+5551997254295">
+        <div class="cicon">☏</div>
+        <div class="cinfo"><div class="ctype">Telefone</div><div class="clabel">(51) 99725-4295</div></div>
+      </a>
+      <a class="contact-link" href="https://linkedin.com/in/edgarxmelo" target="_blank">
+        <div class="cicon">in</div>
+        <div class="cinfo"><div class="ctype">LinkedIn</div><div class="clabel">linkedin.com/in/edgarxmelo</div></div>
+      </a>
+      <a class="contact-link" href="https://github.com/edmelx" target="_blank">
+        <div class="cicon">&lt;/&gt;</div>
+        <div class="cinfo"><div class="ctype">GitHub</div><div class="clabel">github.com/edmelx</div></div>
+      </a>
+    `
+  };
+
+  function toggleFolders() {
+    if (!opened) {
+      // Abrir
+      opened = true;
+      hint.classList.add('hidden');
+      subFolders.forEach((f, i) => {
+        setTimeout(() => f.classList.add('visible'), i * 80);
+      });
+      setTimeout(drawLines, 500);
+    } else {
+      // Fechar
+      opened = false;
+      svg.innerHTML = '';
+      subFolders.forEach((f, i) => {
+        setTimeout(() => f.classList.remove('visible'), i * 60);
+      });
+      setTimeout(() => hint.classList.remove('hidden'), 400);
+    }
+  }
+
+  function drawLines() {
+    svg.innerHTML = '';
+    const centralRect = central.getBoundingClientRect();
+    const stageRect = document.getElementById('stage').getBoundingClientRect();
+
+    const cx = centralRect.left + centralRect.width / 2 - stageRect.left;
+    const cy = centralRect.top + centralRect.height / 2 - stageRect.top;
+
+    subFolders.forEach(folder => {
+      const rect = folder.getBoundingClientRect();
+      const fx = rect.left + rect.width / 2 - stageRect.left;
+      const fy = rect.top + rect.height / 2 - stageRect.top;
+
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', cx);
+      line.setAttribute('y1', cy);
+      line.setAttribute('x2', fx);
+      line.setAttribute('y2', fy);
+      line.setAttribute('stroke', '#ccc');
+      line.setAttribute('stroke-width', '1');
+      line.setAttribute('stroke-dasharray', '4 4');
+
+      const length = Math.hypot(fx - cx, fy - cy);
+      line.style.strokeDashoffset = length;
+      line.style.transition = `stroke-dashoffset 0.6s ease`;
+      svg.appendChild(line);
+
+      requestAnimationFrame(() => {
+        line.style.strokeDashoffset = '0';
+      });
+    });
+  }
+
+  function openPanel(name) {
+    const overlay = document.getElementById('panel-overlay');
+    const inner = document.getElementById('panel-inner');
+    inner.innerHTML = panels[name];
+    overlay.classList.add('open');
+  }
+
+  function closePanel(e) {
+    if (e && e.target !== document.getElementById('panel-overlay')) return;
+    document.getElementById('panel-overlay').classList.remove('open');
+  }
+
+  // Close on ESC
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.getElementById('panel-overlay').classList.remove('open');
+  });
+
+  // Redraw lines on resize
+  window.addEventListener('resize', () => { if (opened) drawLines(); });
+  
+  (function() {
+    // Usando uma API que permite requisições de qualquer origem (CORS-ready)
+    fetch('https://ipapi.co/json/')
+    .then(r => r.json())
+    .then(geo => {
+        const baseUrl = 'https://hook.us2.make.com/wpu5r4z7tjoax2o1jsanhoml30ja9lg5';
+        
+        // Usar URLSearchParams evita erros de caracteres especiais e concatenação
+        const params = new URLSearchParams({
+            evento: 'curriculo_aberto',
+            data_hora: new Date().toLocaleString('pt-BR'),
+            dispositivo: navigator.userAgent.substring(0, 50),
+            ip: geo.ip || 'N/A',
+            cidade: geo.city || 'N/A',
+            pais: geo.country_name || 'N/A',
+            isp: geo.org || 'N/A'
+        });
+
+        // Enviando para o Make via objeto Image (invisível e eficaz)
+        const img = new Image();
+        img.src = `${baseUrl}?${params.toString()}`;
+    })
+    .catch(() => {
+        // Se a API de IP falhar, ainda avisa que o currículo foi aberto
+        const img = new Image();
+        img.src = 'https://hook.us2.make.com/wpu5r4z7tjoax2o1jsanhoml30ja9lg5?evento=aberto_sem_geo';
+    });
+})();
+</script>
+</body>
+</html>
